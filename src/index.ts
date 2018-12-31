@@ -8,8 +8,7 @@ import {Container as BaseContainer} from 'unstated';
 class Container<State extends object> extends BaseContainer<State> {
 
   private _listeners: Function[];
-  private _suspendNr = 0;
-  private _updateSuspended = false;
+  private _isSuspending = false;
 
   async setState ( updater: ( ( prevState: Readonly<State> ) => Partial<State> | State | null) | Partial<State> | State | null, callback?: Function ): Promise<void> {
 
@@ -33,20 +32,22 @@ class Container<State extends object> extends BaseContainer<State> {
   }
 
   suspend (): void {
-    this._suspendNr++;
+    this._isSuspending = true;
   }
 
   unsuspend ( callback?: Function ): void {
-    if ( !this._suspendNr ) return;
-    this._suspendNr--;
-    if ( !this._suspendNr && this._updateSuspended ) this._updateEmit ( callback );
+	
+	if ( !this._isSuspending ) return;
+	
+	this._isSuspending = false;
+
+	this._updateEmit ( callback );
+	
   }
 
   private _updateEmit ( callback?: Function ): void {
 
-    this._updateSuspended = !!this._suspendNr;
-
-    if ( this._updateSuspended ) return;
+    if ( this._isSuspending ) return;
 
     const promises = this._listeners.map ( listener => listener () );
 
