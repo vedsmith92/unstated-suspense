@@ -32,8 +32,6 @@ class App extends Container {
 }
 ```
 
-**Note**: If you call `suspend` N times you should call `unsuspend` N time also to resume updates propagation.
-
 
 ## Related
 
